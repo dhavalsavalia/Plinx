@@ -2,8 +2,8 @@ from typing import Callable, Union
 
 from webob import Request, Response
 
-from .status_codes import StatusCodes
 from .utils import handle_404
+
 
 class Plinx:
     def __init__(self):
@@ -44,10 +44,15 @@ class Plinx:
 
         return response
 
-    def find_handler(self, request: Request, response: Response) -> Union[Callable, None]:
+    def find_handler(
+            self,
+            request: Request,
+            response: Response
+    ) -> Union[Callable, None]:
         """
         Find the handler for the given request.
-        If no handler is found, set the response status code to 404 and return None.
+        If no handler is found, set the response status code to 404
+        and return None.
 
         :param request: The request object.
         :param response: The response object.
