@@ -19,6 +19,12 @@ class Plinx:
         self.exception_handler = None
         self.middleware = Middleware(self)
 
+        self._method_decorators = {}
+        for method in HTTPMethods:
+            self._method_decorators[method.name.lower()] = (
+                self._create_method_decorator(method)
+            )
+
     def __call__(
         self,
         environ: WSGIEnvironment,
@@ -65,117 +71,32 @@ class Plinx:
 
         return wrapper
 
-    def post(
+    def __getattr__(
         self,
-        path: str,
+        name: str,
     ):
-        """
-        Register a POST route with the given path.
-        :param path: The path to register.
-        :return:
-        """
+        """Allow access to HTTP method decorators like app.get, app.post etc."""
+        if name in self._method_decorators:
+            return self._method_decorators[name]
+        raise RuntimeError(
+            f"'{self.__class__.__name__}' object has no attribute '{name}'"
+        )
 
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.POST)
-            return handler
-
-        return wrapper
-
-    def get(
-        self,
-        path: str,
-    ):
+    def _create_method_decorator(self, method: HTTPMethods):
         """
-        Register a GET route with the given path.
-        :param path: The path to register.
-        :return:
+        Creates a decorator for registering routes with a specific HTTP method.
+        :param method: The HTTP method enum value
+        :return: Decorator function
         """
 
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.GET)
-            return handler
+        def decorator(path: str):
+            def wrapper(handler):
+                self.add_route(path, handler, method)
+                return handler
 
-        return wrapper
+            return wrapper
 
-    def put(
-        self,
-        path: str,
-    ):
-        """
-        Register a PUT route with the given path.
-        :param path: The path to register.
-        :return:
-        """
-
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.PUT)
-            return handler
-
-        return wrapper
-
-    def delete(
-        self,
-        path: str,
-    ):
-        """
-        Register a DELETE route with the given path.
-        :param path: The path to register.
-        :return:
-        """
-
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.DELETE)
-            return handler
-
-        return wrapper
-
-    def patch(
-        self,
-        path: str,
-    ):
-        """
-        Register a PATCH route with the given path.
-        :param path: The path to register.
-        :return:
-        """
-
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.PATCH)
-            return handler
-
-        return wrapper
-
-    def options(
-        self,
-        path: str,
-    ):
-        """
-        Register an OPTIONS route with the given path.
-        :param path: The path to register.
-        :return:
-        """
-
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.OPTIONS)
-            return handler
-
-        return wrapper
-
-    def head(
-        self,
-        path: str,
-    ):
-        """
-        Register a HEAD route with the given path.
-        :param path: The path to register.
-        :return:
-        """
-
-        def wrapper(handler):
-            self.add_route(path, handler, HTTPMethods.HEAD)
-            return handler
-
-        return wrapper
+        return decorator
 
     def handle_request(
         self,
@@ -193,7 +114,7 @@ class Plinx:
         try:
             if handler_definition is not None:
                 method, handler = handler_definition
-                
+
                 # Handle CBVs
                 if inspect.isclass(handler):
                     handler = getattr(
