@@ -1,11 +1,13 @@
 import pytest
 
 from plinx import Plinx
+from plinx.middleware import Middleware
 
 
 @pytest.fixture
 def app():
     return Plinx()
+
 
 @pytest.fixture
 def client(app):
@@ -21,6 +23,7 @@ class TestFlaskLikeApplication:
         @app.route("/home")
         def home(request, response):
             response.text = "Hello, World!"
+
         assert app.routes["/home"] == home
 
     def test_404_response(self, client):
@@ -32,6 +35,7 @@ class TestFlaskLikeApplication:
         @app.route("/hello/{name}")
         def hello(request, response, name):
             response.text = f"Hello, {name}!"
+
         response = client.get("http://testserver/hello/Dhaval")
         assert response.status_code == 200
         assert response.text == "Hello, Dhaval!"
@@ -40,10 +44,13 @@ class TestFlaskLikeApplication:
         @app.route("/duplicate")
         def handler1(request, response):
             response.text = "First"
+
         with pytest.raises(RuntimeError) as excinfo:
+
             @app.route("/duplicate")
             def handler2(request, response):
                 response.text = "Second"
+
         assert isinstance(excinfo.value, RuntimeError)
         assert "Route '/duplicate' is already registered." == str(excinfo.value)
 
@@ -52,8 +59,10 @@ class TestFlaskLikeApplication:
         class BooksResource:
             def get(self, req, resp):
                 resp.text = "Books Page"
+
             def post(self, req, resp):
                 resp.text = "Endpoint to create a book"
+
         response = client.get("http://testserver/book")
         assert response.status_code == 200
         assert response.text == "Books Page"
@@ -66,6 +75,7 @@ class TestFlaskLikeApplication:
         class DummyCBV:
             def get(self, req, resp):
                 resp.text = "GET OK"
+
         response = client.post("http://testserver/cbv")
         assert response.status_code == 405
         assert response.text == "Method Not Allowed"
@@ -88,9 +98,38 @@ class TestDjangoLikeApplication:
     def test_add_route(self, app, client):
         def home(request, response):
             response.text = "Hello, World!"
-        
+
         app.add_route("/home", home)
 
         response = client.get("http://testserver/home")
         assert response.status_code == 200
         assert response.text == "Hello, World!"
+
+
+class TestMiddleware:
+    def test_middleware_functionality(self, app, client):
+        process_request_called = False
+        process_response_called = False
+
+        class CallMiddlewareMethods(Middleware):
+            def __init__(self, app):
+                super().__init__(app)
+
+            def process_request(self, request):
+                nonlocal process_request_called
+                process_request_called = True
+
+            def process_response(self, request, response):
+                nonlocal process_response_called
+                process_response_called = True
+
+        app.add_middleware(CallMiddlewareMethods)
+
+        @app.route("/")
+        def home(request, response):
+            response.text = "Hello, World!"
+
+        client.get("http://testserver/")
+
+        assert process_request_called is True
+        assert process_response_called is True
