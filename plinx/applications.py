@@ -1,3 +1,4 @@
+import inspect
 from typing import Callable, Dict, Iterable, Tuple
 from wsgiref.types import StartResponse, WSGIEnvironment
 
@@ -62,6 +63,19 @@ class Plinx:
         handler, kwargs = self.find_handler(request, response)
 
         if handler is not None:
+            # Handle CBVs
+            if inspect.isclass(handler):
+                handler = getattr(
+                    handler(),
+                    request.method.lower(),
+                    None,
+                )
+                # only allow methods that are defined in the class
+                if handler is None:
+                    response.status_code = 405
+                    response.text = "Method Not Allowed"
+                    return response
+
             handler(request, response, **kwargs)
 
         return response
@@ -85,6 +99,6 @@ class Plinx:
             parse_result = parse(path, request.path)
             if parse_result is not None:
                 return handler, parse_result.named
-        
+
         handle_404(response)
         return None, None

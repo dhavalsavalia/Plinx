@@ -7,14 +7,11 @@ app = Plinx()
 def home(request, response):
     response.text = "Hello, World!"
 
-@app.route("/home")
-def home2(request, response):
-    response.text = "Hello, World!"
-
 
 @app.route("/hello/{name}")
 def hello(request, response, name):
     response.text = f"Hello, {name}!"
+
 
 @app.route("/math/{operation}/{num_1:d}/{num_2:d}")
 def sum(request, response, operation, num_1, num_2):
@@ -32,3 +29,12 @@ def sum(request, response, operation, num_1, num_2):
     else:
         response.status_code = 400
         response.text = "Invalid operation"
+
+
+@app.route("/book")
+class BooksResource:
+    def get(self, req, resp):
+        resp.text = "Books Page"
+
+    def post(self, req, resp):
+        resp.text = "Endpoint to create a book"

@@ -50,3 +50,32 @@ class TestApplication:
 
         assert isinstance(excinfo.value, RuntimeError)
         assert "Route '/duplicate' is already registered." == str(excinfo.value)
+
+    def test_class_based_route(self, app=app):
+        @app.route("/book")
+        class BooksResource:
+            def get(self, req, resp):
+                resp.text = "Books Page"
+
+            def post(self, req, resp):
+                resp.text = "Endpoint to create a book"
+
+        request = Request.blank("/book")
+        response = app.handle_request(request)
+        assert response.status_code == 200
+        assert response.text == "Books Page"
+        request = Request.blank("/book", method="POST")
+        response = app.handle_request(request)
+        assert response.status_code == 200
+        assert response.text == "Endpoint to create a book"
+
+    def test_method_not_allowed(self, app=app):
+        @app.route("/cbv")
+        class DummyCBV:
+            def get(self, req, resp):
+                resp.text = "GET OK"
+
+        request = Request.blank("/cbv", method="POST")
+        response = app.handle_request(request)
+        assert response.status_code == 405
+        assert response.text == "Method Not Allowed"
