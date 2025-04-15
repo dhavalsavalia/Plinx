@@ -1,4 +1,5 @@
 from plinx import Plinx
+from plinx.middleware import Middleware
 
 app = Plinx()
 
@@ -52,3 +53,12 @@ app.add_exception_handler(custom_exception_handler)
 @app.route("/exception")
 def exception_handler(request, response):
     raise AttributeError("This is a test exception")
+
+class CustomMiddleware(Middleware):
+    def process_request(self, request):
+        print("Processing request in middleware", request.path)
+
+    def process_response(self, request, response):
+        print("Processing response in middleware", response.text)
+
+app.add_middleware(CustomMiddleware)

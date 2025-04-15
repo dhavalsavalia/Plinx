@@ -7,6 +7,7 @@ from requests import Session as RequestsSession
 from webob import Request, Response
 from wsgiadapter import WSGIAdapter as RequestsWSGIAdapter
 
+from .middleware import Middleware
 from .utils import handle_404
 
 
@@ -14,6 +15,7 @@ class Plinx:
     def __init__(self):
         self.routes: Dict[str, Callable] = {}
         self.exception_handler = None
+        self.middleware = Middleware(self)
 
     def __call__(
         self,
@@ -24,13 +26,9 @@ class Plinx:
         Entrypoint for the WSGI application.
         :param environ: The WSGI environment.
         :param start_response: The WSGI callable.
-        :return: The response body.
+        :return: The response body produced by the middleware.
         """
-        request = Request(environ)
-
-        response = self.handle_request(request)
-
-        return response(environ, start_response)
+        return self.middleware(environ, start_response)
 
     def add_route(
         self,
@@ -131,6 +129,16 @@ class Plinx:
         exception_handler,
     ):
         self.exception_handler = exception_handler
+    
+    def add_middleware(
+        self,
+        middleware_cls: type[Middleware],
+    ):
+        """
+        Add a middleware class to the application.
+        :param middleware_cls: The middleware class to add.
+        """
+        self.middleware.add(middleware_cls)
 
     def test_session(self, base_url="http://testserver"):
         session = RequestsSession()
