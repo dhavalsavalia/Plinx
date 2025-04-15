@@ -15,7 +15,7 @@ def hello(request, response, name):
 
 
 @app.post("/math/{operation}/{num_1:d}/{num_2:d}")
-def sum(request, response, operation, num_1, num_2):
+def calculate_math(request, response, operation, num_1, num_2):
     if operation == "add":
         response.text = f"{num_1} + {num_2} = {num_1 + num_2}"
     elif operation == "subtract":
