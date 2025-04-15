@@ -54,7 +54,7 @@ class Middleware:
         Process the request before it is passed to the application.
         :param request: The request object.
         """
-        pass
+        pass # pragma: no cover
 
     def process_response(
         self,
@@ -66,7 +66,7 @@ class Middleware:
         :param request: The request object.
         :param response: The response object.
         """
-        pass
+        pass # pragma: no cover
 
     def handle_request(self, request: Request):
         """
