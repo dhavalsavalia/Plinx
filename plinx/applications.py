@@ -7,6 +7,7 @@ from requests import Session as RequestsSession
 from webob import Request, Response
 from wsgiadapter import WSGIAdapter as RequestsWSGIAdapter
 
+from .methods import HTTPMethods
 from .middleware import Middleware
 from .status_codes import StatusCodes
 from .utils import handle_404
@@ -14,7 +15,7 @@ from .utils import handle_404
 
 class Plinx:
     def __init__(self):
-        self.routes: Dict[str, Callable] = {}
+        self.routes: Dict[str, Tuple[HTTPMethods, Callable]] = {}
         self.exception_handler = None
         self.middleware = Middleware(self)
 
@@ -35,6 +36,7 @@ class Plinx:
         self,
         path: str,
         handler: Callable,
+        method: HTTPMethods = HTTPMethods.GET,
     ):
         """
         Add a route to the application. Django-like syntax.
@@ -45,7 +47,7 @@ class Plinx:
         if path in self.routes:
             raise RuntimeError(f"Route '{path}' is already registered.")
 
-        self.routes[path] = handler
+        self.routes[path] = (method, handler)
 
     def route(
         self,
@@ -53,13 +55,124 @@ class Plinx:
     ):
         """
         Register a route with the given path.
-        TODO: Add support for HTTP methods.
         :param path: The path to register.
         :return:
         """
 
         def wrapper(handler):
             self.add_route(path, handler)
+            return handler
+
+        return wrapper
+
+    def post(
+        self,
+        path: str,
+    ):
+        """
+        Register a POST route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.POST)
+            return handler
+
+        return wrapper
+
+    def get(
+        self,
+        path: str,
+    ):
+        """
+        Register a GET route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.GET)
+            return handler
+
+        return wrapper
+
+    def put(
+        self,
+        path: str,
+    ):
+        """
+        Register a PUT route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.PUT)
+            return handler
+
+        return wrapper
+
+    def delete(
+        self,
+        path: str,
+    ):
+        """
+        Register a DELETE route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.DELETE)
+            return handler
+
+        return wrapper
+
+    def patch(
+        self,
+        path: str,
+    ):
+        """
+        Register a PATCH route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.PATCH)
+            return handler
+
+        return wrapper
+
+    def options(
+        self,
+        path: str,
+    ):
+        """
+        Register an OPTIONS route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.OPTIONS)
+            return handler
+
+        return wrapper
+
+    def head(
+        self,
+        path: str,
+    ):
+        """
+        Register a HEAD route with the given path.
+        :param path: The path to register.
+        :return:
+        """
+
+        def wrapper(handler):
+            self.add_route(path, handler, HTTPMethods.HEAD)
             return handler
 
         return wrapper
@@ -75,10 +188,12 @@ class Plinx:
         """
         response: Response = Response()
 
-        handler, kwargs = self.find_handler(request, response)
+        handler_definition, kwargs = self.find_handler(request, response)
 
         try:
-            if handler is not None:
+            if handler_definition is not None:
+                method, handler = handler_definition
+                
                 # Handle CBVs
                 if inspect.isclass(handler):
                     handler = getattr(
@@ -92,6 +207,13 @@ class Plinx:
                         response.text = "Method Not Allowed"
                         return response
 
+                if inspect.isfunction(handler):
+                    # Handle function-based views
+                    if request.method != method.value:
+                        response.status_code = StatusCodes.METHOD_NOT_ALLOWED.value
+                        response.text = "Method Not Allowed"
+                        return response
+
                 handler(request, response, **kwargs)
 
         except Exception as e:
@@ -100,7 +222,7 @@ class Plinx:
             else:
                 response.status_code = StatusCodes.INTERNAL_SERVER_ERROR.value
                 response.text = str(e)
-                
+
         return response
 
     def find_handler(
@@ -131,7 +253,7 @@ class Plinx:
         exception_handler,
     ):
         self.exception_handler = exception_handler
-    
+
     def add_middleware(
         self,
         middleware_cls: type[Middleware],

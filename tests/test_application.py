@@ -1,6 +1,7 @@
 import pytest
 
 from plinx import Plinx
+from plinx.methods import HTTPMethods
 from plinx.middleware import Middleware
 
 
@@ -24,7 +25,9 @@ class TestFlaskLikeApplication:
         def home(request, response):
             response.text = "Hello, World!"
 
-        assert app.routes["/home"] == home
+        method, handler = app.routes["/home"]
+        assert handler == home
+        assert method.value == "GET"
 
     def test_404_response(self, client):
         response = client.get("http://testserver/not-found")
@@ -53,7 +56,80 @@ class TestFlaskLikeApplication:
 
         assert isinstance(excinfo.value, RuntimeError)
         assert "Route '/duplicate' is already registered." == str(excinfo.value)
+    
+    def test_method_not_allowed(self, app, client):
+        @app.post("/method_not_allowed")
+        def method_not_allowed(request, response):
+            response.text = "Best POST method"
 
+        response = client.get("http://testserver/method_not_allowed")
+        assert response.status_code == 405
+        assert response.text == "Method Not Allowed"
+    
+    def test_post_request(self, app, client):
+        @app.post("/post")
+        def post_handler(request, response):
+            response.text = "POST request received"
+
+        response = client.post("http://testserver/post")
+        assert response.status_code == 200
+        assert response.text == "POST request received"
+    
+    def test_get_request(self, app, client):
+        @app.get("/get")
+        def get_handler(request, response):
+            response.text = "GET request received"
+
+        response = client.get("http://testserver/get")
+        assert response.status_code == 200
+        assert response.text == "GET request received"
+    
+    def test_put_request(self, app, client):
+        @app.put("/put")
+        def put_handler(request, response):
+            response.text = "PUT request received"
+
+        response = client.put("http://testserver/put")
+        assert response.status_code == 200
+        assert response.text == "PUT request received"
+    
+    def test_delete_request(self, app, client):
+        @app.delete("/delete")
+        def delete_handler(request, response):
+            response.text = "DELETE request received"
+
+        response = client.delete("http://testserver/delete")
+        assert response.status_code == 200
+        assert response.text == "DELETE request received"
+    
+    def test_options_request(self, app, client):
+        @app.options("/options")
+        def options_handler(request, response):
+            response.text = "OPTIONS request received"
+        
+        response = client.options("http://testserver/options")
+        assert response.status_code == 200
+        assert response.text == "OPTIONS request received"
+    
+    def test_patch_request(self, app, client):
+        @app.patch("/patch")
+        def patch_handler(request, response):
+            response.text = "PATCH request received"
+
+        response = client.patch("http://testserver/patch")
+        assert response.status_code == 200
+        assert response.text == "PATCH request received"
+    
+    def test_head_request(self, app, client):
+        @app.head("/head")
+        def head_handler(request, response):
+            response.headers["X-TEST-HEADER"] = "Test Header"
+
+        response = client.head("http://testserver/head")
+        assert response.status_code == 200
+        assert response.headers["X-TEST-HEADER"] == "Test Header"
+
+class TestClassBasedView:
     def test_class_based_route(self, app, client):
         @app.route("/book")
         class BooksResource:
@@ -116,6 +192,16 @@ class TestDjangoLikeApplication:
         response = client.get("http://testserver/home")
         assert response.status_code == 200
         assert response.text == "Hello, World!"
+    
+    def test_method_not_allowed(self, app, client):
+        def home(request, response):
+            response.text = "Hello, World!"
+
+        app.add_route("/home", home, HTTPMethods.POST)
+
+        response = client.get("http://testserver/home")
+        assert response.status_code == 405
+        assert response.text == "Method Not Allowed"
 
 
 class TestMiddleware:
