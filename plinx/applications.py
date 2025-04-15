@@ -31,6 +31,22 @@ class Plinx:
 
         return response(environ, start_response)
 
+    def add_route(
+        self,
+        path: str,
+        handler: Callable,
+    ):
+        """
+        Add a route to the application. Django-like syntax.
+        :param path: The path to register.
+        :param handler: The handler to register.
+        :return:
+        """
+        if path in self.routes:
+            raise RuntimeError(f"Route '{path}' is already registered.")
+
+        self.routes[path] = handler
+
     def route(
         self,
         path: str,
@@ -42,11 +58,8 @@ class Plinx:
         :return:
         """
 
-        if path in self.routes:
-            raise RuntimeError(f"Route '{path}' is already registered.")
-
         def wrapper(handler):
-            self.routes[path] = handler
+            self.add_route(path, handler)
             return handler
 
         return wrapper

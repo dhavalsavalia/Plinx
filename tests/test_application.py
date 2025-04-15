@@ -12,7 +12,7 @@ def client(app):
     return app.test_session()
 
 
-class TestApplication:
+class TestFlaskLikeApplication:
     def test_app_object(self, app):
         assert app.routes == {}
         assert app is not None
@@ -69,3 +69,15 @@ class TestApplication:
         response = client.post("http://testserver/cbv")
         assert response.status_code == 405
         assert response.text == "Method Not Allowed"
+
+
+class TestDjangoLikeApplication:
+    def test_add_route(self, app, client):
+        def home(request, response):
+            response.text = "Hello, World!"
+        
+        app.add_route("/home", home)
+
+        response = client.get("http://testserver/home")
+        assert response.status_code == 200
+        assert response.text == "Hello, World!"
