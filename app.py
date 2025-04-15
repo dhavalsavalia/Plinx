@@ -43,3 +43,12 @@ class BooksResource:
 def django_like_route(request, response):
     response.text = "Django-like route response"
 app.add_route("/django-like", django_like_route)
+
+def custom_exception_handler(request, response, exception_cls):
+    response.text = str(exception_cls)
+
+app.add_exception_handler(custom_exception_handler)
+
+@app.route("/exception")
+def exception_handler(request, response):
+    raise AttributeError("This is a test exception")

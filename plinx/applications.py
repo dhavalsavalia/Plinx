@@ -13,6 +13,7 @@ from .utils import handle_404
 class Plinx:
     def __init__(self):
         self.routes: Dict[str, Callable] = {}
+        self.exception_handler = None
 
     def __call__(
         self,
@@ -77,22 +78,29 @@ class Plinx:
 
         handler, kwargs = self.find_handler(request, response)
 
-        if handler is not None:
-            # Handle CBVs
-            if inspect.isclass(handler):
-                handler = getattr(
-                    handler(),
-                    request.method.lower(),
-                    None,
-                )
-                # only allow methods that are defined in the class
-                if handler is None:
-                    response.status_code = 405
-                    response.text = "Method Not Allowed"
-                    return response
+        try:
+            if handler is not None:
+                # Handle CBVs
+                if inspect.isclass(handler):
+                    handler = getattr(
+                        handler(),
+                        request.method.lower(),
+                        None,
+                    )
+                    # only allow methods that are defined in the class
+                    if handler is None:
+                        response.status_code = 405
+                        response.text = "Method Not Allowed"
+                        return response
 
-            handler(request, response, **kwargs)
+                handler(request, response, **kwargs)
 
+        except Exception as e:
+            if self.exception_handler:
+                self.exception_handler(request, response, e)
+            else:
+                raise e
+                
         return response
 
     def find_handler(
@@ -117,6 +125,12 @@ class Plinx:
 
         handle_404(response)
         return None, None
+
+    def add_exception_handler(
+        self,
+        exception_handler,
+    ):
+        self.exception_handler = exception_handler
 
     def test_session(self, base_url="http://testserver"):
         session = RequestsSession()
