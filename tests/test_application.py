@@ -1,15 +1,14 @@
 # Write test cases for the application here using pytest
+import pytest
 from webob import Request, Response
 
 from plinx import Plinx
 
 
 class TestApplication:
-
     app = Plinx()
 
     def test_app_object(self, app=app):
-
         assert app.routes == {}
         assert app is not None
 
@@ -37,3 +36,17 @@ class TestApplication:
         response = app.handle_request(request)
         assert response.status_code == 200
         assert response.text == "Hello, Dhaval!"
+
+    def test_duplicate_route(self, app=app):
+        @app.route("/duplicate")
+        def handler1(request, response):
+            response.text = "First"
+
+        with pytest.raises(RuntimeError) as excinfo:
+
+            @app.route("/duplicate")
+            def handler2(request, response):
+                response.text = "Second"
+
+        assert isinstance(excinfo.value, RuntimeError)
+        assert "Route '/duplicate' is already registered." == str(excinfo.value)

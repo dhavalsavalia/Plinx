@@ -7,6 +7,10 @@ app = Plinx()
 def home(request, response):
     response.text = "Hello, World!"
 
+@app.route("/home")
+def home2(request, response):
+    response.text = "Hello, World!"
+
 
 @app.route("/hello/{name}")
 def hello(request, response, name):

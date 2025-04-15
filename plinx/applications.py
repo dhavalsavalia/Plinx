@@ -39,6 +39,9 @@ class Plinx:
         :return:
         """
 
+        if path in self.routes:
+            raise RuntimeError(f"Route '{path}' is already registered.")
+
         def wrapper(handler):
             self.routes[path] = handler
             return handler
