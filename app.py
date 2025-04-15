@@ -61,4 +61,14 @@ class CustomMiddleware(Middleware):
     def process_response(self, request, response):
         print("Processing response in middleware", response.text)
 
+class SecondMiddleware(Middleware):
+    def process_request(self, request):
+        print("Processing request in SecondMiddleware", request.path)
+
+    def process_response(self, request, response):
+        print("Processing response in SecondMiddleware", response.text)
+        response.text += " - Modified by SecondMiddleware"
+        return response
+
+app.add_middleware(SecondMiddleware)
 app.add_middleware(CustomMiddleware)

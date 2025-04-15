@@ -8,6 +8,7 @@ from webob import Request, Response
 from wsgiadapter import WSGIAdapter as RequestsWSGIAdapter
 
 from .middleware import Middleware
+from .status_codes import StatusCodes
 from .utils import handle_404
 
 
@@ -87,7 +88,7 @@ class Plinx:
                     )
                     # only allow methods that are defined in the class
                     if handler is None:
-                        response.status_code = 405
+                        response.status_code = StatusCodes.METHOD_NOT_ALLOWED.value
                         response.text = "Method Not Allowed"
                         return response
 
@@ -97,7 +98,8 @@ class Plinx:
             if self.exception_handler:
                 self.exception_handler(request, response, e)
             else:
-                raise e
+                response.status_code = StatusCodes.INTERNAL_SERVER_ERROR.value
+                response.text = str(e)
                 
         return response
 

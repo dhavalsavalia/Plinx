@@ -79,7 +79,9 @@ class TestFlaskLikeApplication:
         response = client.post("http://testserver/cbv")
         assert response.status_code == 405
         assert response.text == "Method Not Allowed"
-    
+
+
+class TestExceptionHandling:
     def test_custom_exception_handler(self, app, client):
         def on_exception(request, response, exception):
             response.text = "AttributeErrorHappened"
@@ -92,6 +94,16 @@ class TestFlaskLikeApplication:
 
         response = client.get("http://testserver/exception")
         assert response.text == "AttributeErrorHappened"
+    
+    def test_no_exception_handler(self, app, client):
+        @app.route("/exception")
+        def exception_handler(request, response):
+            raise AttributeError("This is a test exception")
+
+        response = client.get("http://testserver/exception")
+        
+        assert response.status_code == 500
+        assert response.text == "This is a test exception"
 
 
 class TestDjangoLikeApplication:
