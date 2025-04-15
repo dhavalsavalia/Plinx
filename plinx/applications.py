@@ -3,7 +3,9 @@ from typing import Callable, Dict, Iterable, Tuple
 from wsgiref.types import StartResponse, WSGIEnvironment
 
 from parse import parse
+from requests import Session as RequestsSession
 from webob import Request, Response
+from wsgiadapter import WSGIAdapter as RequestsWSGIAdapter
 
 from .utils import handle_404
 
@@ -102,3 +104,8 @@ class Plinx:
 
         handle_404(response)
         return None, None
+
+    def test_session(self, base_url="http://testserver"):
+        session = RequestsSession()
+        session.mount(prefix=base_url, adapter=RequestsWSGIAdapter(self))
+        return session

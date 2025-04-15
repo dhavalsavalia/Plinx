@@ -12,6 +12,8 @@ parse = "*"
 
 [dev-packages]
 flake8 = "*"
+requests = "*"
+requests-wsgi-adapter = "*"
 
 [requires]
 python_version = "3.11"
