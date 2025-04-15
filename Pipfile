@@ -8,6 +8,7 @@ gunicorn = "*"
 a2wsgi = "*"
 webob = "*"
 pytest = "*"
+parse = "*"
 
 [dev-packages]
 flake8 = "*"
