@@ -128,6 +128,15 @@ class TestFlaskLikeApplication:
         response = client.head("http://testserver/head")
         assert response.status_code == 200
         assert response.headers["X-TEST-HEADER"] == "Test Header"
+    
+    def test_invalid_method(self, app, client):
+        with pytest.raises(RuntimeError) as excinfo:
+            @app.trace("/invalid")
+            def invalid_handler(request, response):
+                response.text = "Invalid method"
+        
+        assert isinstance(excinfo.value, RuntimeError)
+        assert "'Plinx' object has no attribute 'trace'" == str(excinfo.value)
 
 class TestClassBasedView:
     def test_class_based_route(self, app, client):
