@@ -4,11 +4,12 @@ from wsgiref.types import StartResponse, WSGIEnvironment
 
 from parse import parse
 from requests import Session as RequestsSession
-from webob import Request, Response
+from webob import Request
 from wsgiadapter import WSGIAdapter as RequestsWSGIAdapter
 
 from .methods import HTTPMethods
 from .middleware import Middleware
+from .response import PlinxResponse as Response
 from .status_codes import StatusCodes
 from .utils import handle_404
 
