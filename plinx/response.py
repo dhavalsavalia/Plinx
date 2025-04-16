@@ -40,8 +40,7 @@ class PlinxResponse:
         if self.json is not None:
             self.body = json.dumps(self.json).encode("UTF-8")
             self.content_type = "application/json"
-
-        if self.text is not None:
+        elif self.text is not None:
             self.body = self.text.encode("utf-8") if isinstance(self.text, str) else self.text
             self.content_type = "text/plain"
 
