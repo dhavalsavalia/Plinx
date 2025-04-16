@@ -13,6 +13,10 @@ def home(request, response):
 def hello(request, response, name):
     response.text = f"Hello, {name}!"
 
+@app.get("/json")
+def json_response(request, response):
+    response.json = {"message": "Hello, JSON!"}
+
 
 @app.post("/math/{operation}/{num_1:d}/{num_2:d}")
 def calculate_math(request, response, operation, num_1, num_2):
@@ -70,5 +74,5 @@ class SecondMiddleware(Middleware):
         response.text += " - Modified by SecondMiddleware"
         return response
 
-app.add_middleware(SecondMiddleware)
+# app.add_middleware(SecondMiddleware)
 app.add_middleware(CustomMiddleware)
