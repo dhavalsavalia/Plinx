@@ -14,6 +14,14 @@ class Database:
     def create(self, table: "Table"):
         self.connection.execute(table._get_create_sql())
 
+    def save(self, instance: 'Table'):
+        sql, values = instance._get_insert_sql()
+        cursor = self.connection.execute(sql, values)
+        instance._data["id"] = cursor.lastrowid
+        self.connection.commit()
+
+
+
     def close(self):
         if self.connection:
             self.connection.close()
@@ -45,7 +53,7 @@ class Table:
 
         for key, value in kwargs.items():
             self._data[key] = value
-    
+
     def __getattribute__(self, key):
         """
         Values to be access are in `self._data`
@@ -58,7 +66,6 @@ class Table:
         if key in _data:
             return _data[key]
         return super().__getattribute__(key)
-
 
     @classmethod
     def _get_create_sql(cls):
@@ -76,3 +83,30 @@ class Table:
         fields = ", ".join(fields)
         name = cls.__name__.lower()
         return CREATE_TABLE_SQL.format(name=name, fields=fields)
+
+    def _get_insert_sql(self):
+        INSERT_SQL = "INSERT INTO {name} ({fields}) VALUES ({placeholders});"
+
+        cls = self.__class__
+        fields = []
+        placeholders = []
+        values = []
+
+        for name, field in inspect.getmembers(cls):
+            if isinstance(field, Column):
+                fields.append(name)
+                values.append(getattr(self, name))
+                placeholders.append("?")
+            elif isinstance(field, ForeignKey):
+                fields.append(name + "_id")
+                values.append(getattr(self, name).id)
+                placeholders.append("?")
+
+        fields = ", ".join(fields)
+        placeholders = ", ".join(placeholders)
+
+        sql = INSERT_SQL.format(
+            name=cls.__name__.lower(), fields=fields, placeholders=placeholders
+        )
+
+        return sql, values
