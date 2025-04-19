@@ -14,13 +14,25 @@ class Database:
     def create(self, table: "Table"):
         self.connection.execute(table._get_create_sql())
 
-    def save(self, instance: 'Table'):
+    def save(self, instance: "Table"):
         sql, values = instance._get_insert_sql()
         cursor = self.connection.execute(sql, values)
         instance._data["id"] = cursor.lastrowid
         self.connection.commit()
 
+    def all(self, table: "Table"):
+        sql, fields = table._get_select_all_sql()
+        rows = self.connection.execute(sql).fetchall()
 
+        result = []
+
+        for row in rows:
+            instance = table()
+            for field, value in zip(fields, row):
+                setattr(instance, field, value)
+            result.append(instance)
+
+        return result
 
     def close(self):
         if self.connection:
@@ -110,3 +122,20 @@ class Table:
         )
 
         return sql, values
+
+    @classmethod
+    def _get_select_all_sql(cls):
+        SELECT_ALL_SQL = "SELECT {fields} FROM {name};"
+
+        fields = ["id"]
+
+        for name, field in inspect.getmembers(cls):
+            if isinstance(field, Column):
+                fields.append(name)
+            elif isinstance(field, ForeignKey):
+                fields.append(name + "_id")
+
+        return SELECT_ALL_SQL.format(
+            fields=", ".join(fields),
+            name=cls.__name__.lower(),
+        ), fields
