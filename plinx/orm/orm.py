@@ -34,6 +34,17 @@ class Database:
 
         return result
 
+    def get(self, table: "Table", **kwargs):
+        sql, fields, params = table._get_select_where_sql(**kwargs)
+        row = self.connection.execute(sql, params).fetchone()
+
+        if row is None:
+            raise Exception(f"{table.__name__} instance with {kwargs} does not exist")
+
+        properties = dict(zip(fields, row))
+
+        return table(**properties)
+
     def close(self):
         if self.connection:
             self.connection.close()
@@ -139,3 +150,31 @@ class Table:
             fields=", ".join(fields),
             name=cls.__name__.lower(),
         ), fields
+
+    @classmethod
+    def _get_select_where_sql(cls, **kwargs):
+        SELECT_WHERE_SQL = "SELECT {fields} FROM {name} WHERE {query};"
+
+        fields = ["id"]
+        query = []
+        values = []
+
+        for name, field in inspect.getmembers(cls):
+            if isinstance(field, Column):
+                fields.append(name)
+            elif isinstance(field, ForeignKey):
+                fields.append(name + "_id")
+
+        for key, value in kwargs.items():
+            query.append(f"{key} = ?")
+            values.append(value)
+
+        return (
+            SELECT_WHERE_SQL.format(
+                fields=", ".join(fields),
+                name=cls.__name__.lower(),
+                query=", ".join(query),
+            ),
+            fields,
+            values,
+        )
