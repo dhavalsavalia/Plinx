@@ -1,5 +1,7 @@
 import sqlite3
 
+import pytest
+
 
 def test_database_connection(db):
     assert db.connection is not None
@@ -129,3 +131,68 @@ def test_query_all_books(db, Author, Book):
     assert len(books) == 1
     assert type(books[0]) is Book
     assert {b.title for b in books} == {"Test Book"}
+
+
+def test_get_author(db, Author):
+    db.create(Author)
+    john_srow = Author(name="John Doe", age=43)  # get it? John Snow
+    db.save(john_srow)
+
+    john_from_db = db.get(Author, id=1)
+
+    assert Author._get_select_where_sql(id=1) == (
+        "SELECT id, age, name FROM author WHERE id = ?;",
+        ["id", "age", "name"],
+        [1],
+    )
+    assert type(john_from_db) is Author
+    assert john_from_db.age == 43
+    assert john_from_db.name == "John Doe"
+    assert john_from_db.id == 1
+
+
+def test_get_book(db, Author, Book):
+    db.create(Author)
+    db.create(Book)
+
+    john = Author(name="John Doe", age=23)
+    db.save(john)
+
+    book = Book(
+        title="Test Book",
+        published=True,
+        author=john,
+    )
+    db.save(book)
+
+    book_from_db = db.get(Book, title="Test Book")
+    assert Book._get_select_where_sql(title="Test Book") == (
+        "SELECT id, author_id, published, title FROM book WHERE title = ?;",
+        ["id", "author_id", "published", "title"],
+        ["Test Book"],
+    )
+    assert type(book_from_db) is Book
+    assert book_from_db.id == 1
+    assert book_from_db.title == "Test Book"
+
+
+def test_get_invalid_book(db, Author, Book):
+    db.create(Author)
+    db.create(Book)
+
+    john = Author(name="John Doe", age=23)
+    db.save(john)
+
+    book = Book(
+        title="Test Book",
+        published=True,
+        author=john,
+    )
+    db.save(book)
+
+    
+    with pytest.raises(Exception) as excinfo:
+        db.get(Book, id=2)
+
+        assert isinstance(excinfo.value, Exception)
+        assert "Book instance with {'id': 2} does not exist" == str(excinfo.value)
