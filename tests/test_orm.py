@@ -72,7 +72,7 @@ def test_save_book_instance(db, Author, Book):
 
     john = Author(name="John Doe", age=23)
     db.save(john)
-    
+
     book = Book(
         title="Test Book",
         published=True,
@@ -82,6 +82,50 @@ def test_save_book_instance(db, Author, Book):
 
     assert book._get_insert_sql() == (
         "INSERT INTO book (author_id, published, title) VALUES (?, ?, ?);",
-        [1, True, 'Test Book'],
+        [1, True, "Test Book"],
     )
     assert book.id == 1
+
+
+def test_query_all_authors(db, Author):
+    db.create(Author)
+    john = Author(name="John Doe", age=23)
+    vik = Author(name="Vik Star", age=43)
+    db.save(john)
+    db.save(vik)
+
+    authors = db.all(Author)
+
+    assert Author._get_select_all_sql() == (
+        "SELECT id, age, name FROM author;",
+        ["id", "age", "name"],
+    )
+    assert len(authors) == 2
+    assert type(authors[0]) is Author
+    assert {a.age for a in authors} == {23, 43}
+    assert {a.name for a in authors} == {"John Doe", "Vik Star"}
+
+
+def test_query_all_books(db, Author, Book):
+    db.create(Author)
+    db.create(Book)
+
+    john = Author(name="John Doe", age=23)
+    db.save(john)
+
+    book = Book(
+        title="Test Book",
+        published=True,
+        author=john,
+    )
+    db.save(book)
+
+    books = db.all(Book)
+
+    assert Book._get_select_all_sql() == (
+        "SELECT id, author_id, published, title FROM book;",
+        ["id", "author_id", "published", "title"],
+    )
+    assert len(books) == 1
+    assert type(books[0]) is Book
+    assert {b.title for b in books} == {"Test Book"}
