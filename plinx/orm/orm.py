@@ -40,6 +40,26 @@ class ForeignKey:
 
 
 class Table:
+    def __init__(self, **kwargs):
+        self._data = {"id": None}
+
+        for key, value in kwargs.items():
+            self._data[key] = value
+    
+    def __getattribute__(self, key):
+        """
+        Values to be access are in `self._data`
+        Accessing without __getattribute__ will return Column or ForeignKey and not the actual value
+        """
+        # Why use super().__getattribute__ instead of self._data[key]?
+        # Because otherwise it will create an infinite loop since __getattribute__ will call itself
+        # and will never return the value
+        _data = super().__getattribute__("_data")
+        if key in _data:
+            return _data[key]
+        return super().__getattribute__(key)
+
+
     @classmethod
     def _get_create_sql(cls):
         CREATE_TABLE_SQL = "CREATE TABLE IF NOT EXISTS {name} ({fields});"
