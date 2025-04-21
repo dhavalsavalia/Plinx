@@ -200,3 +200,54 @@ def test_get_invalid_book(db, Author, Book):
 
         assert isinstance(excinfo.value, Exception)
         assert "Book instance with {'id': 2} does not exist" == str(excinfo.value)
+
+
+def test_update_author(db, Author):
+    db.create(Author)
+    john = Author(name="John Doe", age=23)
+    db.save(john)
+
+    john.age = 43
+    john.name = "John Snow"
+    db.update(john)
+
+    assert john._get_update_sql() == (
+        "UPDATE author SET age = ?, name = ? WHERE id = ?;",
+        [43, "John Snow", 1],
+    )
+
+    john_from_db = db.get(Author, id=john.id)
+
+    assert john_from_db.age == 43
+    assert john_from_db.name == "John Snow"
+    assert john_from_db.id == 1
+
+
+def test_update_book(db, Author, Book):
+    db.create(Author)
+    db.create(Book)
+
+    john = Author(name="John Doe", age=23)
+    db.save(john)
+
+    book = Book(
+        title="Test Book",
+        published=1,
+        author=john,
+    )
+    db.save(book)
+
+    book.title = "Updated Book"
+    book.published = False
+    db.update(book)
+
+    assert book._get_update_sql() == (
+        "UPDATE book SET author_id = ?, published = ?, title = ? WHERE id = ?;",
+        [1, False, "Updated Book", 1],
+    )
+
+    book_from_db = db.get(Book, id=book.id)
+
+    assert book_from_db.title == "Updated Book"
+    assert book_from_db.id == 1
+    assert book_from_db.published == False # noqa 0 is False 
