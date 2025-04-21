@@ -63,6 +63,11 @@ class Database:
         self.connection.execute(sql, values)
         self.connection.commit()
 
+    def delete(self, instance: "Table"):
+        sql, values = instance._get_delete_sql()
+        self.connection.execute(sql, values)
+        self.connection.commit()
+
     def close(self):
         if self.connection:
             self.connection.close()
@@ -226,3 +231,10 @@ class Table:
             name=cls.__name__.lower(),
             fields=", ".join([f"{field} = ?" for field in fields]),
         ), values
+
+    def _get_delete_sql(self):
+        DELETE_SQL = "DELETE FROM {name} WHERE id = ?;"
+
+        return DELETE_SQL.format(
+            name=self.__class__.__name__.lower()
+        ), [getattr(self, "id")]

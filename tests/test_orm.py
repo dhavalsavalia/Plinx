@@ -251,3 +251,22 @@ def test_update_book(db, Author, Book):
     assert book_from_db.title == "Updated Book"
     assert book_from_db.id == 1
     assert book_from_db.published == False # noqa 0 is False 
+
+
+def test_delete_author(db, Author):
+    db.create(Author)
+    john = Author(name="John Doe", age=23)
+    db.save(john)
+
+    assert john._get_delete_sql() == (
+        "DELETE FROM author WHERE id = ?;",
+        [1]
+    )
+
+    db.delete(john)
+
+    with pytest.raises(Exception) as excinfo:
+        db.get(Author, id=john.id)
+
+        assert isinstance(excinfo.value, Exception)
+        assert "Author instance with {'id': 1} does not exist" == str(excinfo.value)
