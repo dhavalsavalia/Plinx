@@ -10,6 +10,13 @@
                 "app:app",
                 "--reload"
             ]
+        },
+        {
+            "name": "Python Debugger: Pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "args": []
         }
     ]
 }
