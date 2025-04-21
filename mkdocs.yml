@@ -1,0 +1,95 @@
+site_name: Plinx
+site_description: Experimental, minimalistic, and extensible WSGI-based web framework and ORM
+site_url: https://github.com/dhavalsavalia/Plinx
+repo_url: https://github.com/dhavalsavalia/Plinx
+repo_name: dhavalsavalia/Plinx
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - footnotes
+  - toc:
+      permalink: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [plinx]
+          options:
+            show_source: true
+            docstring_style: google
+            show_if_no_docstring: false
+            show_root_heading: true
+            show_category_heading: true
+            heading_level: 3
+  - mermaid2
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Installation: getting-started/installation.md
+      - Quick Start: getting-started/quick-start.md
+  - User Guide:
+      - Core Concepts: user-guide/core-concepts.md
+      - Routing: user-guide/routing.md
+      - Middleware: user-guide/middleware.md
+      - Handling Requests: user-guide/handling-requests.md
+      - Responses: user-guide/responses.md
+      - Class-Based Views: user-guide/class-based-views.md
+      - Error Handling: user-guide/error-handling.md
+  - ORM:
+      - Introduction: orm/introduction.md
+      - Tables & Models: orm/tables-and-models.md
+      - Database Operations: orm/database-operations.md
+  - API Reference:
+      - Applications: api/applications.md
+      - Methods: api/methods.md
+      - Middleware: api/middleware.md
+      - Response: api/response.md
+      - ORM: api/orm.md
+  - Development:
+      - Contributing: development/contributing.md
+      - Design Philosophy: development/design-philosophy.md
+  - About:
+      - License: about/license.md
+      - Release Notes: about/release-notes.md

@@ -194,7 +194,6 @@ def test_get_invalid_book(db, Author, Book):
     )
     db.save(book)
 
-    
     with pytest.raises(Exception) as excinfo:
         db.get(Book, id=2)
 
@@ -250,7 +249,7 @@ def test_update_book(db, Author, Book):
 
     assert book_from_db.title == "Updated Book"
     assert book_from_db.id == 1
-    assert book_from_db.published == False # noqa 0 is False 
+    assert book_from_db.published == False  # noqa 0 is False
 
 
 def test_delete_author(db, Author):
@@ -258,10 +257,7 @@ def test_delete_author(db, Author):
     john = Author(name="John Doe", age=23)
     db.save(john)
 
-    assert john._get_delete_sql() == (
-        "DELETE FROM author WHERE id = ?;",
-        [1]
-    )
+    assert john._get_delete_sql() == ("DELETE FROM author WHERE id = ?;", [1])
 
     db.delete(john)
 
