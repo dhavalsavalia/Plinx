@@ -73,7 +73,7 @@ pytest --cov=.
   - [x] Class Based Routes
   - [x] Django-like Routes
   - [x] Middleware Support
-- [ ] ORM
+- [x] ORM
 
 ---
 
