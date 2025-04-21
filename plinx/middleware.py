@@ -3,10 +3,51 @@ from webob import Request, Response
 
 class Middleware:
     """
-    Middleware base class for all middleware classes.
-    This class is used to create middleware for the Plinx application.
-    Middleware classes should inherit from this class and implement the
-    `process_request` and `process_response` methods.
+    Base class for all Plinx middleware components.
+
+    The middleware system in Plinx follows a nested pattern where each middleware
+    wraps the application or another middleware component. This allows for a chain
+    of processing both before a request reaches the application and after the
+    application generates a response.
+
+    Middleware classes should inherit from this base class and override the
+    `process_request` and `process_response` methods to implement custom behavior.
+
+    The middleware execution flow works like this:
+    1. Client request comes in
+    2. Each middleware's `process_request` is called from outermost to innermost
+    3. The application handles the request
+    4. Each middleware's `process_response` is called from innermost to outermost
+    5. The response is sent back to the client
+
+    Examples:
+        ```python
+        class LoggingMiddleware(Middleware):
+            def process_request(self, request):
+                print(f"Request: {request.path}")
+
+            def process_response(self, request, response):
+                print(f"Response: {response.status_code}")
+
+        app = Plinx()
+        app.add_middleware(LoggingMiddleware)
+        ```
+
+        Middleware that modifies the request or response:
+
+        ```python
+        class AuthMiddleware(Middleware):
+            def process_request(self, request):
+                request.user = None
+                auth_header = request.headers.get("Authorization", "")
+                if auth_header.startswith("Bearer "):
+                    token = auth_header[7:]
+                    request.user = self.get_user_from_token(token)
+
+            def get_user_from_token(self, token):
+                # Implementation to validate token and return user
+                pass
+        ```
     """
 
     def __init__(
@@ -14,8 +55,10 @@ class Middleware:
         app,
     ):
         """
-        Middleware base class for all middleware classes.
-        :param app: The WSGI application.
+        Initialize the middleware with a WSGI application.
+
+        Args:
+            app: A WSGI application (typically a Plinx instance or another middleware)
         """
         self.app = app
 
@@ -25,10 +68,19 @@ class Middleware:
         start_response: callable,
     ):
         """
-        Entrypoint for the WSGI middleware since it is now entrypoint for the WSGI application.
-        :param environ: The WSGI environment.
-        :param start_response: The WSGI callable.
-        :return: The response body.
+        WSGI callable interface for the middleware.
+
+        This method makes middleware instances callable according to the WSGI spec,
+        allowing them to be used in a WSGI server. It creates a Request object,
+        passes it to the application's handle_request method, and returns the
+        response.
+
+        Args:
+            environ: The WSGI environment dictionary
+            start_response: The WSGI start_response callable
+
+        Returns:
+            An iterable of bytes representing the response body
         """
         request = Request(environ)
 
@@ -41,8 +93,14 @@ class Middleware:
         middleware_cls,
     ):
         """
-        Add a middleware class to the application.
-        :param middleware_cls: The middleware class to add.
+        Add a new middleware to the stack.
+
+        This method creates an instance of the provided middleware class,
+        passing the current middleware instance (or application) as the app parameter.
+        This builds up a chain of nested middleware instances.
+
+        Args:
+            middleware_cls: A class inheriting from Middleware
         """
         self.app = middleware_cls(self.app)
 
@@ -51,10 +109,15 @@ class Middleware:
         request: Request,
     ):
         """
-        Process the request before it is passed to the application.
-        :param request: The request object.
+        Process the request before it reaches the application.
+
+        Override this method in your middleware subclass to modify or inspect
+        the request before it's handled by the application or the next middleware.
+
+        Args:
+            request: The WebOb Request object
         """
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
     def process_response(
         self,
@@ -62,17 +125,31 @@ class Middleware:
         response: Response,
     ):
         """
-        Process the response after it is passed to the application.
-        :param request: The request object.
-        :param response: The response object.
+        Process the response after it's generated by the application.
+
+        Override this method in your middleware subclass to modify or inspect
+        the response before it's returned to the client or the previous middleware.
+
+        Args:
+            request: The WebOb Request object that generated this response
+            response: The Response object to be returned
         """
-        pass # pragma: no cover
+        pass  # pragma: no cover
 
     def handle_request(self, request: Request):
         """
-        Handle the incoming request.
-        :param request: The request object.
-        :return: The response object.
+        Process a request through this middleware and the wrapped application.
+
+        This method implements the middleware chain by:
+        1. Calling this middleware's process_request method
+        2. Passing the request to the wrapped application/middleware
+        3. Calling this middleware's process_response method with the response
+
+        Args:
+            request: The WebOb Request object
+
+        Returns:
+            The Response object after processing
         """
         self.process_request(request)
         response = self.app.handle_request(request)

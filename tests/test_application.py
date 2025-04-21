@@ -255,7 +255,7 @@ class TestCustomResponses:
         assert response.status_code == 200
         assert response.headers["Content-Type"] == "text/plain"
         assert response.text == "Hello, Text!"
-    
+
     def test_manually_setting_body(self, app, client):
         @app.route("/manual")
         def manual_response(request, response):
@@ -267,7 +267,7 @@ class TestCustomResponses:
         assert response.status_code == 200
         assert response.headers["Content-Type"] == "text/plain"
         assert response.text == "Hello, Manual!"
-    
+
     def test_custom_headers(self, app, client):
         @app.route("/headers")
         def custom_headers(request, response):

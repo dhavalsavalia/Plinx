@@ -3,5 +3,5 @@ SQLITE_TYPE_MAP = {
     float: "REAL",
     str: "TEXT",
     bytes: "BLOB",
-    bool: "INTEGER"
+    bool: "INTEGER",
 }
