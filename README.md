@@ -10,8 +10,9 @@ It is designed to be simple, fast, and easy to extend, making it ideal for rapid
 
 ## Features
 
-- 🚀 Minimal and fast web framework
-- 🛣️ Intuitive routing system
+- 🚀 Minimal and fast WSGI web framework
+- 💾 Integrated Object-Relational Mapper (ORM)
+- 🛣️ Intuitive routing system (including parameterized and class-based routes)
 - 🧩 Extensible middleware support
 - 🧪 Simple, readable codebase for learning and hacking
 - 📝 Type hints and modern Python best practices
@@ -23,7 +24,7 @@ It is designed to be simple, fast, and easy to extend, making it ideal for rapid
 Install from PyPI:
 
 ```bash
-pip instal Plinx
+pip install Plinx
 ```
 
 Install directly from the git source:
@@ -39,19 +40,30 @@ pip install git+https://github.com/dhavalsavalia/plinx.git
 Create a simple web application in seconds:
 
 ```python
+# myapp.py
 from plinx import Plinx
 
 app = Plinx()
 
 @app.route("/")
 def index(request, response):
-    response.text = "Hello, world!"
+    response.text = "Hello, Plinx 1.0.0!"
+
+# Example using the ORM (requires database setup)
+# from plinx.orm import Database, Table, Column
+# db = Database("my_database.db")
+# class Item(Table):
+#     name = Column(str)
+#     count = Column(int)
+# db.create(Item)
+# db.save(Item(name="Example", count=1))
 ```
 
-Run your app (example, assuming you have an ASGI server like `uvicorn`):
+Run your app using a WSGI server (like `gunicorn`):
 
 ```bash
-uvicorn myapp:app
+pip install gunicorn
+gunicorn myapp:app
 ```
 
 ## Testing
@@ -61,19 +73,6 @@ Use [pytest](https://docs.pytest.org/en/latest/) to unit test this framework.
 ```bash
 pytest --cov=.
 ```
-
----
-
-## Roadmap
-
-- [x] Web Framework
-  - [x] Routing
-  - [x] Explicit Routing Methods (GET, POST, etc.)
-  - [x] Parameterized Routes
-  - [x] Class Based Routes
-  - [x] Django-like Routes
-  - [x] Middleware Support
-- [x] ORM
 
 ---
 
@@ -91,7 +90,7 @@ This project is licensed under the MIT License. See [LICENSE](LICENSE) for detai
 
 ## Author & Contact
 
-Created and maintained by [Dhaval Savalia](https://github.com/dhavalsavalia).  
+Created and maintained by [Dhaval Savalia](https://github.com/dhavalsavalia).
 For questions or opportunities, feel free to reach out via [LinkedIn](https://www.linkedin.com/in/dhavalsavalia/) or open an issue.
 
 ---

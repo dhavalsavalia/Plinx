@@ -15,7 +15,7 @@ AUTHOR = "Dhaval Savalia"
 REQUIRES_PYTHON = ">=3.11.0"
 VERSION = None
 
-REQUIRED = []
+REQUIRED = ["webob", "parse"]
 EXTRAS = {}
 
 with open("VERSION", "r") as f:
