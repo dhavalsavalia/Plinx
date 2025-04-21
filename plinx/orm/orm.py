@@ -27,10 +27,15 @@ class Database:
         result = []
 
         for row in rows:
-            instance = table()
+            properties = {}
             for field, value in zip(fields, row):
-                setattr(instance, field, value)
-            result.append(instance)
+                if field.endswith("_id"):
+                    foreign_key = field[:-3]
+                    foreign_table = getattr(table, foreign_key).table
+                    properties[foreign_key] = self.get(foreign_table, id=value)
+                else:
+                    properties[field] = value
+            result.append(table(**properties))
 
         return result
 
@@ -41,7 +46,15 @@ class Database:
         if row is None:
             raise Exception(f"{table.__name__} instance with {kwargs} does not exist")
 
-        properties = dict(zip(fields, row))
+        properties = {}
+
+        for field, value in zip(fields, row):
+            if field.endswith("_id"):
+                foreign_key = field[:-3]
+                foreign_table = getattr(table, foreign_key).table
+                properties[foreign_key] = self.get(foreign_table, id=value)
+            else:
+                properties[field] = value
 
         return table(**properties)
 
