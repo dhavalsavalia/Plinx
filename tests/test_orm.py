@@ -131,6 +131,8 @@ def test_query_all_books(db, Author, Book):
     assert len(books) == 1
     assert type(books[0]) is Book
     assert {b.title for b in books} == {"Test Book"}
+    assert books[0].author.name == "John Doe"
+    assert books[0].author.age == 23
 
 
 def test_get_author(db, Author):
@@ -174,6 +176,8 @@ def test_get_book(db, Author, Book):
     assert type(book_from_db) is Book
     assert book_from_db.id == 1
     assert book_from_db.title == "Test Book"
+    assert book_from_db.author.name == "John Doe"
+    assert book_from_db.author.age == 23
 
 
 def test_get_invalid_book(db, Author, Book):
