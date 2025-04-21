@@ -1,5 +1,8 @@
 # Release Notes
 
+## Plinx 1.0.1 (April 2025)
+This is a minor release that includes new documentation.
+
 ## Plinx 1.0.0 (April 2025)
 
 We're excited to announce the release of Plinx 1.0.0! This is the first stable release of our experimental, minimalistic, and extensible WSGI-based web framework and ORM.

@@ -34,7 +34,7 @@ def hello(request, response):
 def get_data(request, response):
     response.json = {
         "name": "Plinx",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "features": ["routing", "middleware", "orm"]
     }
     # Content-Type is automatically set to application/json

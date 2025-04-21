@@ -1,6 +1,6 @@
 # Design Philosophy
 
-This page outlines the core design principles that guided the development of Plinx 1.0.0. Understanding these principles provides insight into why certain design choices were made.
+This page outlines the core design principles that guided the development of Plinx. Understanding these principles provides insight into why certain design choices were made.
 
 ## Core Principles
 

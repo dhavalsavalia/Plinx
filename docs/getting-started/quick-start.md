@@ -55,7 +55,7 @@ def about(request, response):
 def api_info(request, response):
     response.json = {
         "name": "Plinx",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "status": "OK"
     }
     

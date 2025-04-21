@@ -47,7 +47,7 @@ app = Plinx()
 
 @app.route("/")
 def index(request, response):
-    response.text = "Hello, Plinx 1.0.0!"
+    response.text = "Hello, Plinx 1.0.1!"
 
 # Example using the ORM (requires database setup)
 # from plinx.orm import Database, Table, Column

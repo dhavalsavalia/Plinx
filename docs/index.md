@@ -1,6 +1,6 @@
 # Plinx Web Framework
 
-Welcome to the official documentation for Plinx 1.0.0, a simple, lightweight, and educational Python web framework and ORM.
+Welcome to the official documentation for Plinx, a simple, lightweight, and educational Python web framework and ORM.
 
 ## About Plinx
 
@@ -91,7 +91,7 @@ if __name__ == "__main__":
 
 ## About
 
-- [Release Notes](about/release-notes.md): What's new in 1.0.0
+- [Release Notes](about/release-notes.md): What's new in 1.0.1
 - [License](about/license.md): MIT License information
 
 ## Who Should Use Plinx?
