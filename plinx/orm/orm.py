@@ -58,6 +58,11 @@ class Database:
 
         return table(**properties)
 
+    def update(self, instance: "Table"):
+        sql, values = instance._get_update_sql()
+        self.connection.execute(sql, values)
+        self.connection.commit()
+
     def close(self):
         if self.connection:
             self.connection.close()
@@ -102,6 +107,14 @@ class Table:
         if key in _data:
             return _data[key]
         return super().__getattribute__(key)
+
+    def __setattr__(self, key, value):
+        """
+        Values to be set are in `self._data`
+        """
+        super().__setattr__(key, value)
+        if key in self._data:
+            self._data[key] = value
 
     @classmethod
     def _get_create_sql(cls):
@@ -191,3 +204,25 @@ class Table:
             fields,
             values,
         )
+
+    def _get_update_sql(self):
+        UPDATE_SQL = "UPDATE {name} SET {fields} WHERE id = ?;"
+
+        cls = self.__class__
+        fields = []
+        values = []
+
+        for name, field in inspect.getmembers(cls):
+            if isinstance(field, Column):
+                fields.append(name)
+                values.append(getattr(self, name))
+            elif isinstance(field, ForeignKey):
+                fields.append(name + "_id")
+                values.append(getattr(self, name).id)
+
+        values.append(getattr(self, "id"))
+
+        return UPDATE_SQL.format(
+            name=cls.__name__.lower(),
+            fields=", ".join([f"{field} = ?" for field in fields]),
+        ), values
